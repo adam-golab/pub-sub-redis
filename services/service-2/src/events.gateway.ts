@@ -1,30 +1,31 @@
 import {
-  OnGatewayConnection, OnGatewayDisconnect,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
+import { EventEmitter } from "events";
+import { fromEvent, Observable } from "rxjs";
 
 @WebSocketGateway({
-
   cors: {
     origin: '*',
   },
 })
-export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  handleConnection(): any {
-    console.log('client connected');
-  }
-
-  handleDisconnect(): any {
-    console.log('client disconnected');
-  }
+export class EventsGateway {
+  private readonly internalEventEmitter = new EventEmitter();
 
   @WebSocketServer()
   server: Server;
 
-  async emitEvent(data: string): Promise<void> {
+  async emitSocketIoEvent(data: string): Promise<void> {
     this.server.emit('events', data);
+  }
+
+  subscribeToInternalEvent(): Observable<MessageEvent> {
+    return fromEvent(this.internalEventEmitter, 'internal-events') as Observable<MessageEvent>;
+  }
+
+  emitInternalEvent(data: string) {
+    this.internalEventEmitter.emit('internal-events', { data });
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createClient } from 'redis';
 import { EventsGateway } from "./events.gateway";
+import { AppController } from "./app.controller";
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -16,7 +17,9 @@ export class AppService implements OnModuleInit {
 
     await subscriber.subscribe('events', (message) => {
       console.log('Received message:', message);
-      this.eventsGateway.emitEvent(message);
+
+      this.eventsGateway.emitSocketIoEvent(message);
+      this.eventsGateway.emitInternalEvent(message);
     });
   }
 }

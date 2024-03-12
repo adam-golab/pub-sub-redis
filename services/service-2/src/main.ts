@@ -2,7 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    forceCloseConnections: true,
+  });
+
+  app.enableShutdownHooks();
+
   await app.listen(3001, () => {
     console.log('Service 2 is running on port 3001');
   });

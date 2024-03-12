@@ -17,4 +17,6 @@ Publisher runs on port __3000__ and subscriber runs on port __3001__.
 
 Publisher exposes a POST endpoint at http://localhost:3000/ and subscriber listens to the channel __events__.
 
-Subscriber also exposes a Socket.IO server at http://localhost:3001/ and is emitting the received messages to the client.
+Subscriber exposes: 
+- Socket.IO server at http://localhost:3001/ which emits the received message to the client.
+- SSE route at http://localhost:3001/sse which sends the received message to the client.
