@@ -6,9 +6,11 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Post()
-  async publishEvent(@Body() body: { data: string }): Promise<void> {
-    const { data } = body;
+  async publishEvent(
+    @Body() body: { data: string; channel: string },
+  ): Promise<void> {
+    const { data, channel } = body;
 
-    return this.appService.publishEvent(data);
+    return this.appService.publishEvent({ data, channel });
   }
 }

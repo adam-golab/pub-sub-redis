@@ -10,12 +10,18 @@ export class AppService implements OnModuleInit {
     await this.client.connect();
   }
 
-  async publishEvent(data: string): Promise<void> {
+  async publishEvent(payload: {
+    data: string;
+    channel: string;
+  }): Promise<void> {
     const event = {
       id: v4(),
-      data,
-    }
+      data: payload.data,
+    };
 
-    await this.client.publish('events', JSON.stringify(event));
+    await this.client.publish(
+      `events:${payload.channel}`,
+      JSON.stringify(event),
+    );
   }
 }

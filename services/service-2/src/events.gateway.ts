@@ -1,31 +1,27 @@
-import {
-  WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { EventEmitter } from "events";
-import { fromEvent, Observable } from "rxjs";
+import { EventEmitter } from 'events';
+import { fromEvent, Observable } from 'rxjs';
+import { createClient, RedisClientType } from 'redis';
 
-@WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
-})
 export class EventsGateway {
-  private readonly internalEventEmitter = new EventEmitter();
+  private client: RedisClientType;
 
-  @WebSocketServer()
-  server: Server;
+  async onModuleInit() {
+    this.client = await createClient();
 
-  async emitSocketIoEvent(data: string): Promise<void> {
-    this.server.emit('events', data);
+    await this.client.connect();
   }
 
-  subscribeToInternalEvent(): Observable<MessageEvent> {
-    return fromEvent(this.internalEventEmitter, 'internal-events') as Observable<MessageEvent>;
-  }
+  async subscribeToInternalEvent(
+    channel: string,
+  ): Promise<Observable<MessageEvent>> {
+    const internalEventEmitter = new EventEmitter();
 
-  emitInternalEvent(data: string) {
-    this.internalEventEmitter.emit('internal-events', { data });
+    await this.client.subscribe(`events:${channel}`, (message) => {
+      console.log('Received message:', message);
+
+      internalEventEmitter.emit('internal-events', { data: message });
+    });
+
+    return fromEvent<MessageEvent>(internalEventEmitter, 'internal-events');
   }
 }
